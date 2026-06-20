@@ -178,6 +178,8 @@ try:
     energy = data["Base"]["Energy"]
     storeEnergy = data["Base"]["StoreEnergy"]
     energyRecoverTimeInMS = data["Base"]["EnergyRecoverTime"]
+    level = data["Base"]["Level"]
+    name = data["Base"]["Name"]
 
     response = requests.post(
         BACKEND_URL,
@@ -187,6 +189,8 @@ try:
             "energy": energy,
             "storeEnergy": storeEnergy,
             "energyRecoveryTimeInMS": energyRecoverTimeInMS,
+            "level": level,
+            "name": name,
         },
         headers={"x-api-key": API_KEY, "Content-Type": "application/json"},
     )
