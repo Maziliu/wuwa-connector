@@ -10,14 +10,14 @@ import time
 import requests
 
 load_dotenv()
-API_KEY = os.getenv("BACKEND_API_KEY")
+BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 BACKEND_URL = os.getenv("BACKEND_URL")
 CLIENT_LOG_DIRECTORY = os.environ["CLIENT_LOG_DIRECTORY"]
 KURO_WAVEPLATE_ENDPOINT = os.getenv("KURO_WAVEPLATE_ENDPOINT")
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 if (
-    not API_KEY
+    not BACKEND_API_KEY
     or not BACKEND_URL
     or not CLIENT_LOG_DIRECTORY
     or not KURO_WAVEPLATE_ENDPOINT
@@ -150,9 +150,9 @@ try:
     region = userInfoData["UserInfos"][0]["Region"]
 
     playerInfo = None
-    max_retries = 5
+    MAX_RETRIES = 5
     attempts = 0
-    while not playerInfo and attempts < max_retries:
+    while not playerInfo and attempts < MAX_RETRIES:
         attempts += 1
         response = requests.post(
             KURO_WAVEPLATE_ENDPOINT,
@@ -191,8 +191,9 @@ try:
             "energyRecoveryTimeInMS": energyRecoverTimeInMS,
             "level": level,
             "name": name,
+            "userInfoURL": userInfoUrl
         },
-        headers={"x-api-key": API_KEY, "Content-Type": "application/json"},
+        headers={"x-api-key": BACKEND_API_KEY, "Content-Type": "application/json"},
     )
     response.raise_for_status()
     inserted = response.json()
