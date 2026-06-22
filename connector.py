@@ -127,10 +127,6 @@ try:
     oauthCode = result.get("oauthCode")
     userInfoUrl = result.get("userInfoUrl")
 
-    if not playerId:
-        log("playerId not found in client log", isError=True)
-        process.wait()
-        exit(1)
     if not oauthCode:
         log("oauthCode not found in client log", isError=True)
         process.wait()
@@ -142,13 +138,14 @@ try:
 
     process.wait()
 
+    body = {"oauthCode": oauthCode, "userInfoURL": userInfoUrl}
+
+    if playerId is not None:
+        body["playerId"] = playerId
+
     response = requests.post(
         BACKEND_URL,
-        json={
-            "oauthCode": oauthCode,
-            "playerId": playerId,
-            "userInfoURL": userInfoUrl
-        },
+        json=body,
         headers={"x-api-key": BACKEND_API_KEY, "Content-Type": "application/json"},
     )
     response.raise_for_status()
