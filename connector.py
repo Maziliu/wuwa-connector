@@ -13,14 +13,12 @@ load_dotenv()
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY")
 BACKEND_URL = os.getenv("BACKEND_URL")
 CLIENT_LOG_DIRECTORY = os.environ["CLIENT_LOG_DIRECTORY"]
-KURO_WAVEPLATE_ENDPOINT = os.getenv("KURO_WAVEPLATE_ENDPOINT")
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 if (
     not BACKEND_API_KEY
     or not BACKEND_URL
     or not CLIENT_LOG_DIRECTORY
-    or not KURO_WAVEPLATE_ENDPOINT
     or not DISCORD_WEBHOOK
 ):
     print("One or more env are None")
@@ -144,53 +142,11 @@ try:
 
     process.wait()
 
-    userInfoResponse = requests.get(userInfoUrl)
-    userInfoResponse.raise_for_status()
-    userInfoData = userInfoResponse.json()
-    region = userInfoData["UserInfos"][0]["Region"]
-
-    playerInfo = None
-    MAX_RETRIES = 5
-    attempts = 0
-    while not playerInfo and attempts < MAX_RETRIES:
-        attempts += 1
-        response = requests.post(
-            KURO_WAVEPLATE_ENDPOINT,
-            json={"oauthCode": oauthCode, "playerId": playerId, "region": region},
-            headers={"Content-Type": "application/json"},
-        )
-        response.raise_for_status()
-        data = response.json()
-        if data["code"] == 0:
-            playerInfo = data["data"][region]
-        elif data["code"] == 1005:
-            time.sleep(2)
-            continue
-        else:
-            log(f"Waveplate endpoint returned code {data['code']}", isError=True)
-            exit(1)
-
-    if not playerInfo:
-        log("Max retries exceeded", isError=True)
-        exit(1)
-
-    data = json.loads(playerInfo)
-    energy = data["Base"]["Energy"]
-    storeEnergy = data["Base"]["StoreEnergy"]
-    energyRecoverTimeInMS = data["Base"]["EnergyRecoverTime"]
-    level = data["Base"]["Level"]
-    name = data["Base"]["Name"]
-
     response = requests.post(
         BACKEND_URL,
         json={
+            "oauthCode": oauthCode,
             "playerId": playerId,
-            "region": region,
-            "energy": energy,
-            "storeEnergy": storeEnergy,
-            "energyRecoveryTimeInMS": energyRecoverTimeInMS,
-            "level": level,
-            "name": name,
             "userInfoURL": userInfoUrl
         },
         headers={"x-api-key": BACKEND_API_KEY, "Content-Type": "application/json"},
